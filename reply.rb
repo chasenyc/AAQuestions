@@ -7,8 +7,7 @@ require_relative 'modelbase'
 
 class Reply < ModelBase
   def self.all
-    results = QuestionDatabase.instance.execute('SELECT * FROM replies')
-    results.map { |result| Reply.new(result) }
+    super('replies')
   end
 
   def self.find_by_id(id)

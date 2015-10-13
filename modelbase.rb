@@ -11,4 +11,10 @@ class ModelBase
     self.new(result.first)
   end
 
+  def self.all(table)
+    results = QuestionDatabase.instance.execute("SELECT * FROM #{table}")
+    results.map { |result| Reply.new(result) }
+
+  end
+
 end

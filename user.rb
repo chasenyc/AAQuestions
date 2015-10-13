@@ -4,12 +4,11 @@ require_relative 'questionfollow'
 require_relative 'reply'
 require_relative 'questionlike'
 require_relative 'questions'
+require_relative 'modelbase'
 
-class User
+class User < ModelBase
   def self.all
-
-    results = QuestionDatabase.instance.execute('SELECT * FROM users')
-    results.map { |result| User.new(result) }
+    super('users')
   end
 
   def self.find_by_id(id)

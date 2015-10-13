@@ -75,22 +75,23 @@ class Reply < ModelBase
   end
 
   def save
-    if self.id.nil?
-      QuestionDatabase.instance.execute(<<-SQL, self.user_id, self.question_id, self.reference_id, self.body)
-      INSERT INTO
-        replies (user_id, question_id, reference_id, body)
-      VALUES
-        (?, ?, ?, ?)
-      SQL
-      self.id = QuestionDatabase.instance.last_insert_row_id
-    else
-      QuestionDatabase.instance.execute(<<-SQL, self.user_id, self.question_id, self.reference_id, self.body, self.id)
-      UPDATE replies
-      SET user_id = ?, question_id = ?, reference_id = ?, body = ?
-      WHERE
-        replies.id = ?
-      SQL
-    end
+    super('replies')
+    # if self.id.nil?
+    #   QuestionDatabase.instance.execute(<<-SQL, self.user_id, self.question_id, self.reference_id, self.body)
+    #   INSERT INTO
+    #     replies (user_id, question_id, reference_id, body)
+    #   VALUES
+    #     (?, ?, ?, ?)
+    #   SQL
+    #   self.id = QuestionDatabase.instance.last_insert_row_id
+    # else
+    #   QuestionDatabase.instance.execute(<<-SQL, self.user_id, self.question_id, self.reference_id, self.body, self.id)
+    #   UPDATE replies
+    #   SET user_id = ?, question_id = ?, reference_id = ?, body = ?
+    #   WHERE
+    #     replies.id = ?
+    #   SQL
+    # end
   end
 
 end

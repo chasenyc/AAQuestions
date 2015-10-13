@@ -3,10 +3,8 @@ class ModelBase
   def self.method_missing(method_name, *args)
     method_name = method_name.to_s
     if method_name.start_with?("find_by_")
-      # attributes_string is, e.g., "first_name_and_last_name"
       attributes_string = method_name[("find_by_".length)..-1]
 
-      # attribute_names is, e.g., ["first_name", "last_name"]
       attribute_names = attributes_string.split("_and_")
 
       unless attribute_names.length == args.length
@@ -90,15 +88,17 @@ class ModelBase
     end
     final_params = "(#{final_params.join(', ')})"
     update_params = update_params.join(', ')
-
+    p final_values
+    p final_params
+    p final_questions
       if self.id.nil?
         QuestionDatabase.instance.execute(<<-SQL, *final_values)
         INSERT INTO
-          #{self::TABLE_NAME} #{final_params}
+          #{self.class::TABLE_NAME} #{final_params}
         VALUES
           #{final_questions}
         SQL
-        self.id = QuestionDatabase.instance.last_insert_row_id
+        #self.id = QuestionDatabase.instance.last_insert_row_id
       else
         QuestionDatabase.instance.execute(<<-SQL, *final_values, self.id)
         UPDATE

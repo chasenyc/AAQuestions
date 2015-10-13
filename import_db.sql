@@ -87,3 +87,8 @@ INSERT INTO
   question_likes (user_id, question_id)
 VALUES
   ((SELECT id FROM users WHERE fname = 'Lily'), (SELECT id FROM questions WHERE title = 'join type?'));
+
+INSERT INTO
+  question_follows (user_id, question_id)
+VALUES
+  ((SELECT id FROM users WHERE fname = 'Lily'), (SELECT id FROM questions WHERE title = 'why?'));

@@ -44,6 +44,43 @@ class QuestionLike
     num.first.values.first
   end
 
+  def self.liked_questions_for_user_id(user_id)
+    results = QuestionDatabase.instance.execute(<<-SQL, user_id)
+    SELECT
+      questions.*
+    FROM
+      question_likes
+    JOIN
+      questions
+    ON
+      question_likes.question_id = questions.id
+    WHERE
+      question_likes.user_id = ?
+    SQL
+    results.map { |result| Question.new(result) }
+  end
+
+  def self.most_liked_questions(n)
+    results = QuestionDatabase.instance.execute(<<-SQL, n)
+    SELECT
+      questions.*
+    FROM
+      question_likes
+    JOIN
+      questions
+    ON
+      question_likes.question_id = questions.id
+    GROUP BY
+      questions.title, question_likes.question_id
+    ORDER BY
+      COUNT(question_likes.question_id) DESC
+    LIMIT ?
+    SQL
+    results.map { |result| Question.new(result) }
+  end
+
+
+
 
   attr_accessor :user_id, :question_id
 

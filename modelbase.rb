@@ -19,19 +19,32 @@ class ModelBase
       end
       self.where(search_conditions)
     else
-      p "It didn't work"
+      super
     end
   end
 
   def self.where(params= {})
-    param_str = []
-    values = []
-    params.each do |k,v|
-      param_str << "#{k} = ?"
-      values << v
-    end
-    param_str = param_str.join(' AND ')
+    if params.is_a?(String)
+      each_search = params.split(" AND ")
+      param_str = []
+      values = []
+      each_search.each do |search|
+        three_things = search.split(" ")
+        param_str << "#{three_things[0]} #{three_things[1]} ?"
+        values << three_things[2]
+      end
 
+      param_str = param_str.join(' AND ')
+    else
+
+      param_str = []
+      values = []
+      params.each do |k,v|
+        param_str << "#{k} = ?"
+        values << v
+      end
+      param_str = param_str.join(' AND ')
+    end
     result = QuestionDatabase.instance.execute(<<-SQL, *values)
     SELECT
       *
@@ -42,6 +55,7 @@ class ModelBase
     SQL
 
     result.map { |result| self.new(result) }
+
   end
 
   def self.find_by_id(id)

@@ -25,8 +25,8 @@ class User
     results.map { |result| User.new(result) }
   end
 
-  def self.find_by(id)
-    result = QuestionDatabase.instance.execute(<<-SQL, id)
+  def self.find_by_id(id)
+    results = QuestionDatabase.instance.execute(<<-SQL, id)
       SELECT
         *
       FROM
@@ -34,11 +34,11 @@ class User
       WHERE
         id = ?
     SQL
-    User.new(result)
+    User.new(results.first)
   end
 
-  def self.find_by_fname_lname(fname,lname)
-    result = QuestionDatabase.instance.execute(<<-SQL, fname, lname)
+  def self.find_by_name(fname,lname)
+    results = QuestionDatabase.instance.execute(<<-SQL, fname, lname)
       SELECT
         *
       FROM
@@ -46,8 +46,10 @@ class User
       WHERE
         fname = ? AND lname = ?
     SQL
-    User.new(result)
+    User.new(result.first)
   end
+
+
 
   attr_accessor :id, :fname, :lname
 
@@ -56,6 +58,15 @@ class User
     @fname = options['fname']
     @lname = options['lname']
   end
+
+  def authored_questions
+    Question.find_by_author_id(self.id)
+  end
+
+  def authored_replies
+    Reply.find_by_user_id(self.id)
+  end
+
 end
 
 class Question
@@ -65,8 +76,8 @@ class Question
     results.map { |result| Question.new(result) }
   end
 
-  def self.find_by(id)
-    result = QuestionDatabase.instance.execute(<<-SQL, id)
+  def self.find_by_id(id)
+    results = QuestionDatabase.instance.execute(<<-SQL, id)
       SELECT
         *
       FROM
@@ -74,7 +85,19 @@ class Question
       WHERE
         id = ?
     SQL
-    Question.new(result)
+    Question.new(results.first)
+  end
+
+  def self.find_by_author_id(user_id)
+    results = QuestionDatabase.instance.execute(<<-SQL, user_id)
+      SELECT
+        *
+      FROM
+        questions
+      WHERE
+        user_id = ?
+    SQL
+    Question.new(results.first)
   end
 
   attr_accessor :id, :title, :body, :user_id
@@ -84,6 +107,14 @@ class Question
     @title = options['title']
     @body = options['body']
     @user_id = options['user_id']
+  end
+
+  def author
+    User.find_by_id(self.user_id)
+  end
+
+  def replies
+    Reply.find_by_question_id(self.id)
   end
 
 end
@@ -110,7 +141,7 @@ class Reply
   end
 
   def self.find_by(id)
-    result = QuestionDatabase.instance.execute(<<-SQL, id)
+    results = QuestionDatabase.instance.execute(<<-SQL, id)
       SELECT
         *
       FROM
@@ -118,7 +149,31 @@ class Reply
       WHERE
         id = ?
     SQL
-    Reply.new(result)
+    results.map { |result| Reply.new(result) }
+  end
+
+  def self.find_by_user_id(user_id)
+    results = QuestionDatabase.instance.execute(<<-SQL, user_id)
+      SELECT
+        *
+      FROM
+        replies
+      WHERE
+        user_id = ?
+    SQL
+    results.map { |result| Reply.new(result) }
+  end
+
+  def self.find_by_question_id(question_id)
+    results = QuestionDatabase.instance.execute(<<-SQL, question_id)
+      SELECT
+        *
+      FROM
+        replies
+      WHERE
+        question_id = ?
+    SQL
+    results.map { |result| Reply.new(result) }
   end
 
   attr_accessor :id, :body, :user_id, :question_id, :reference_id
@@ -131,6 +186,31 @@ class Reply
     @body = options['body']
 
   end
+
+  def author
+    User.find_by_id(self.user_id)
+  end
+
+  def question
+    Question.find_by_id(self.question_id)
+  end
+
+  def parent_reply
+    Reply.find_by_id(self.reference_id)
+  end
+
+  def child_reply
+    results = QuestionDatabase.instance.execute(<<-SQL, self.id)
+    SELECT
+      *
+    FROM
+     replies
+    WHERE
+      reference_id = ?
+    SQL
+    results.map { |result| Reply.new(result) }
+  end
+
 end
 
 class QuestionLike

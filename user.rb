@@ -7,18 +7,7 @@ require_relative 'questions'
 require_relative 'modelbase'
 
 class User < ModelBase
-  def self.all
-    super('users')
-  end
-
-  def self.where(params= {})
-    super('users', params)
-  end
-
-  def self.find_by_id(id)
-    super(id, 'users')
-
-  end
+  TABLE_NAME = 'users'
 
   def self.find_by_name(fname,lname)
     results = QuestionDatabase.instance.execute(<<-SQL, fname, lname)
@@ -77,10 +66,6 @@ class User < ModelBase
         users.id = ?
     SQL
     results.first.values.first
-  end
-
-  def save
-    super('users')
   end
 
 end

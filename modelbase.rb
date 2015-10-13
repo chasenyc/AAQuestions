@@ -1,43 +1,68 @@
 class ModelBase
 
-  def self.where(table, params= {})
-    params_and_values = []
-    params.each do |k,v|
-      params_and_values << "#{k} = '#{v}'"
-    end
-    params_and_values = params_and_values.join(' AND ')
+  def self.method_missing(method_name, *args)
+    method_name = method_name.to_s
+    if method_name.start_with?("find_by_")
+      # attributes_string is, e.g., "first_name_and_last_name"
+      attributes_string = method_name[("find_by_".length)..-1]
 
-    result = QuestionDatabase.instance.execute(<<-SQL)
+      # attribute_names is, e.g., ["first_name", "last_name"]
+      attribute_names = attributes_string.split("_and_")
+
+      unless attribute_names.length == args.length
+        raise "unexpected # of arguments"
+      end
+
+      search_conditions = {}
+      attribute_names.each_with_index do |el, i|
+        search_conditions[el] = args[i]
+      end
+      self.where(search_conditions)
+    else
+      p "It didn't work"
+    end
+  end
+
+  def self.where(params= {})
+    param_str = []
+    values = []
+    params.each do |k,v|
+      param_str << "#{k} = ?"
+      values << v
+    end
+    param_str = param_str.join(' AND ')
+
+    result = QuestionDatabase.instance.execute(<<-SQL, *values)
     SELECT
       *
     FROM
-      #{table}
+      #{self::TABLE_NAME}
     WHERE
-      #{params_and_values}
+      #{param_str}
     SQL
 
     result.map { |result| self.new(result) }
   end
 
-  def self.find_by_id(id, table)
+  def self.find_by_id(id)
     result = QuestionDatabase.instance.execute(<<-SQL, id)
       SELECT
         *
       FROM
-        #{table}
+        #{self::TABLE_NAME}
       WHERE
         id = ?
     SQL
     self.new(result.first)
   end
 
-  def self.all(table)
-    results = QuestionDatabase.instance.execute("SELECT * FROM #{table}")
+  def self.all
+    results = QuestionDatabase.instance.execute("SELECT * FROM #{self::TABLE_NAME}")
     results.map { |result| self.new(result) }
 
   end
 
-  def save(table)
+  def save
     params = self.instance_variables
     params.delete(:@id)
     final_values = []
@@ -55,7 +80,7 @@ class ModelBase
       if self.id.nil?
         QuestionDatabase.instance.execute(<<-SQL, *final_values)
         INSERT INTO
-          #{table} #{final_params}
+          #{self::TABLE_NAME} #{final_params}
         VALUES
           #{final_questions}
         SQL
@@ -63,10 +88,10 @@ class ModelBase
       else
         QuestionDatabase.instance.execute(<<-SQL, *final_values, self.id)
         UPDATE
-          #{table}
+          #{self::TABLE_NAME}
         SET #{update_params}
         WHERE
-          #{table}.id = ?
+          #{self::TABLE_NAME}.id = ?
         SQL
       end
   end

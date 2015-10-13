@@ -6,18 +6,7 @@ require_relative 'questions'
 require_relative 'modelbase'
 
 class Reply < ModelBase
-  def self.all
-    super('replies')
-  end
-
-  def self.find_by_id(id)
-    super(id, 'replies')
-
-  end
-
-  def self.where(params= {})
-    super('replies', params)
-  end
+  TABLE_NAME = 'replies'
 
   def self.find_by_user_id(user_id)
     results = QuestionDatabase.instance.execute(<<-SQL, user_id)
@@ -76,10 +65,6 @@ class Reply < ModelBase
       reference_id = ?
     SQL
     results.map { |result| Reply.new(result) }
-  end
-
-  def save
-    super('replies')
   end
 
 end

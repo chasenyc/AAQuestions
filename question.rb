@@ -6,22 +6,12 @@ require_relative 'questions'
 require_relative 'modelbase'
 
 class Question < ModelBase
+  TABLE_NAME = 'questions'
 
-  def self.all
-    super('questions')
-  end
+
 
   def self.most_followed(n)
     QuestionFollow.most_followed_questions(n)
-  end
-
-  def self.find_by_id(id)
-    super(id, 'questions')
-
-  end
-
-  def self.where(params= {})
-    super('questions', params)
   end
 
   def self.find_by_author_id(user_id)
@@ -69,8 +59,5 @@ class Question < ModelBase
     QuestionLike.num_likes_for_question_id(self.id)
   end
 
-  def save
-    super('questions')
-  end
 
 end

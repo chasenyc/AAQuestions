@@ -65,7 +65,7 @@ class User
   def average_karma
     results = QuestionDatabase.instance.execute(<<-SQL, self.id)
       SELECT
-        (COUNT(question_likes.question_id)/COUNT(questions.id))
+        CAST(COUNT(question_likes.question_id)/COUNT(questions.id) AS FLOAT)
       FROM
         questions
       LEFT OUTER JOIN
@@ -81,6 +81,25 @@ class User
         users.id = ?
     SQL
     results.first.values.first
+  end
+
+  def save
+    if self.id.nil?
+      QuestionDatabase.instance.execute(<<-SQL, self.fname, self.lname)
+      INSERT INTO
+        users (fname, lname)
+      VALUES
+        (?,?)
+      SQL
+      self.id = QuestionDatabase.last_insert_row_id
+    else
+      QuestionDatabase.instance.execute(<<-SQL, self.fname, self.lname, self.id)
+      UPDATE users
+      SET fname=?, lname=?
+      WHERE
+        users.id = ?
+      SQL
+    end
   end
 
 end

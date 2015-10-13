@@ -11,6 +11,10 @@ class User < ModelBase
     super('users')
   end
 
+  def self.where(params= {})
+    super('users', params)
+  end
+
   def self.find_by_id(id)
     super(id, 'users')
 
@@ -76,22 +80,7 @@ class User < ModelBase
   end
 
   def save
-    if self.id.nil?
-      QuestionDatabase.instance.execute(<<-SQL, self.fname, self.lname)
-      INSERT INTO
-        users (fname, lname)
-      VALUES
-        (?,?)
-      SQL
-      self.id = QuestionDatabase.instance.last_insert_row_id
-    else
-      QuestionDatabase.instance.execute(<<-SQL, self.fname, self.lname, self.id)
-      UPDATE users
-      SET fname=?, lname=?
-      WHERE
-        users.id = ?
-      SQL
-    end
+    super('users')
   end
 
 end

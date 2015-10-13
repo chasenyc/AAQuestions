@@ -20,6 +20,10 @@ class Question < ModelBase
 
   end
 
+  def self.where(params= {})
+    super('questions', params)
+  end
+
   def self.find_by_author_id(user_id)
     results = QuestionDatabase.instance.execute(<<-SQL, user_id)
       SELECT
@@ -66,22 +70,7 @@ class Question < ModelBase
   end
 
   def save
-    if self.id.nil?
-      QuestionDatabase.instance.execute(<<-SQL, self.title, self.body, self.user_id)
-      INSERT INTO
-        questions (title, body, user_id)
-      VALUES
-        (?, ?, ?)
-      SQL
-      self.id = QuestionDatabase.instance.last_insert_row_id
-    else
-      QuestionDatabase.instance.execute(<<-SQL, self.title, self.body, self.user_id, self.id)
-      UPDATE questions
-      SET title=?, body=?, user_id = ?
-      WHERE
-        questions.id = ?
-      SQL
-    end
+    super('questions')
   end
 
 end

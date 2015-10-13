@@ -1,4 +1,24 @@
 class ModelBase
+
+  def self.where(table, params= {})
+    params_and_values = []
+    params.each do |k,v|
+      params_and_values << "#{k} = '#{v}'"
+    end
+    params_and_values = params_and_values.join(' AND ')
+
+    result = QuestionDatabase.instance.execute(<<-SQL)
+    SELECT
+      *
+    FROM
+      #{table}
+    WHERE
+      #{params_and_values}
+    SQL
+
+    result.map { |result| self.new(result) }
+  end
+
   def self.find_by_id(id, table)
     result = QuestionDatabase.instance.execute(<<-SQL, id)
       SELECT
@@ -13,7 +33,7 @@ class ModelBase
 
   def self.all(table)
     results = QuestionDatabase.instance.execute("SELECT * FROM #{table}")
-    results.map { |result| Reply.new(result) }
+    results.map { |result| self.new(result) }
 
   end
 
@@ -50,6 +70,5 @@ class ModelBase
         SQL
       end
   end
-
 
 end

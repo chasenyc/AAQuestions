@@ -11,6 +11,10 @@ class Question
     results.map { |result| Question.new(result) }
   end
 
+  def self.most_followed(n)
+    QuestionFollow.most_followed_questions(n)
+  end
+
   def self.find_by_id(id)
     results = QuestionDatabase.instance.execute(<<-SQL, id)
       SELECT

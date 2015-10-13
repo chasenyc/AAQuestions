@@ -3,23 +3,17 @@ require_relative 'question'
 require_relative 'questionfollow'
 require_relative 'questionlike'
 require_relative 'questions'
+require_relative 'modelbase'
 
-class Reply
+class Reply < ModelBase
   def self.all
     results = QuestionDatabase.instance.execute('SELECT * FROM replies')
     results.map { |result| Reply.new(result) }
   end
 
-  def self.find_by(id)
-    results = QuestionDatabase.instance.execute(<<-SQL, id)
-      SELECT
-        *
-      FROM
-        replies
-      WHERE
-        id = ?
-    SQL
-    results.map { |result| Reply.new(result) }
+  def self.find_by_id(id)
+    super(id, 'replies')
+
   end
 
   def self.find_by_user_id(user_id)
@@ -89,7 +83,7 @@ class Reply
       VALUES
         (?, ?, ?, ?)
       SQL
-      self.id = QuestionDatabase.last_insert_row_id
+      self.id = QuestionDatabase.instance.last_insert_row_id
     else
       QuestionDatabase.instance.execute(<<-SQL, self.user_id, self.question_id, self.reference_id, self.body, self.id)
       UPDATE replies

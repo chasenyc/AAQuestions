@@ -16,15 +16,8 @@ class Question
   end
 
   def self.find_by_id(id)
-    results = QuestionDatabase.instance.execute(<<-SQL, id)
-      SELECT
-        *
-      FROM
-        questions
-      WHERE
-        id = ?
-    SQL
-    Question.new(results.first)
+    super(id, 'questions')
+
   end
 
   def self.find_by_author_id(user_id)
@@ -80,7 +73,7 @@ class Question
       VALUES
         (?, ?, ?)
       SQL
-      self.id = QuestionDatabase.last_insert_row_id
+      self.id = QuestionDatabase.instance.last_insert_row_id
     else
       QuestionDatabase.instance.execute(<<-SQL, self.title, self.body, self.user_id, self.id)
       UPDATE questions

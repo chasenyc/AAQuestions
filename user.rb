@@ -13,15 +13,8 @@ class User
   end
 
   def self.find_by_id(id)
-    results = QuestionDatabase.instance.execute(<<-SQL, id)
-      SELECT
-        *
-      FROM
-        users
-      WHERE
-        id = ?
-    SQL
-    User.new(results.first)
+    super(id, 'users')
+
   end
 
   def self.find_by_name(fname,lname)
@@ -91,7 +84,7 @@ class User
       VALUES
         (?,?)
       SQL
-      self.id = QuestionDatabase.last_insert_row_id
+      self.id = QuestionDatabase.instance.last_insert_row_id
     else
       QuestionDatabase.instance.execute(<<-SQL, self.fname, self.lname, self.id)
       UPDATE users
